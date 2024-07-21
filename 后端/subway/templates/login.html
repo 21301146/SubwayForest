@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地铁信息系统登录</title>
+    <link rel="stylesheet" href="http://81.68.65.34:7676/index.css">
+    <script src="http://81.68.65.34:7676/vue.js"></script>
+    <script scr="http://81.68.65.34:7676/vue-router.js"></script>
+    <script src="http://81.68.65.34:7676/element_ui.js"></script>
+</head>
+<body>
+<div id="app">
+    <div id="login">
+        <el-card class="box-card">
+            <el-row>
+                <el-col :span="24" style="padding: 2% 9%;letter-spacing: 2px"><h2>地铁信息系统登录</h2></el-col>
+                <el-col :span="24"><el-input v-model="username" placeholder="请输入用户名"></el-input></el-col>
+                <el-col :span="24"><el-input placeholder="请输入密码" v-model="password" show-password></el-input></el-col>
+                <el-col :span="24"><el-button style="width: 100%" @click="check_login">提交</el-button></el-col>
+            </el-row>
+        </el-card>
+    </div>
+</div>
+</body>
+<style>
+    *{
+        padding: 0;
+        margin: 0;
+    }
+    #app{
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top:0;
+        left: 0;
+        background-image:linear-gradient(90deg,cyan,purple);
+        background-size: 400%;
+        animation: myanimation 10s infinite;
+        padding: 10% 33%;
+    }
+    @keyframes myanimation{
+        0%{
+            background-position: 0 50%;
+        }
+        50%{
+            background-position: 100% 50%;
+        }
+        100%{
+            background-position: 0 50%;
+        }
+    }
+    .el-card{
+        width: 35%;
+        height: 400px;
+        background-color: rgba(255,255,255,0.4);
+        border-radius: 1em;
+    }
+    .el-row{
+        padding: 2% 15%;
+    }
+    .el-col{
+        margin-bottom:10%;
+    }
+    .el-col h2{
+        font-size: 2em;
+        color: white;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="application/javascript">
+
+    let dt = new Vue({
+        el: '#app',
+        data:{
+            username: "",
+            password: ""
+        },
+        methods:{
+
+            check_login(){
+                axios({
+                    url: "http://127.0.0.1:5000/login?username=" + this.username +  "&password=" + this.password,
+                    method: "get",
+                    headers:{
+                        'Content-Type':'application/x-www-form-urlencoded'
+                    }
+                })
+                .then((res) => {
+                    console.log(res.data);
+                    if(res.data == "登录成功") {
+                        // window.localStorage.setItem("token",res.data["data"]);
+                        {#window.sessionStorage.setItem("token",res.data["data"]);#}
+                        this.$message({
+                            message: '恭喜你，登录成功',
+                            type: 'success'
+                        });
+                        setTimeout(function () {
+                            window.location.replace("/");
+                        },2000)
+                    }
+                })
+                .catch((err) => {
+                    this.$message.error('登录失败，请重新输入');
+                });
+            },
+
+
+            submit(){
+                new Promise(function (resolve,reject) {
+                    axios({
+                        url: "/zmsc/user/checkName",
+                        method: "post",
+                        data:{
+                            usernname: dt.username
+                        },
+                        headers:{
+                            'Content-Type':'application/x-www-form-urlencoded'
+                        }
+                    }).then((res)=>{
+                        if(res.data["code"] === 200) resolve("用户名存在");
+                        else reject("用户名不存在");
+                    });
+                }).then((res)=>{
+                    dt.check_login();
+                }).catch((res)=>{
+                    this.$message.error(res);
+                })
+            },
+
+        }
+    })
+</script>
+</html>
